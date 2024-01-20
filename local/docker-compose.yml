@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+        context: ../
+        dockerfile: Dockerfile
+    image: xpandit-challenge
+    environment:
+      - GOOGLE_PLAY_STORE_PATH=/data/input/googleplaystore.csv
+      - GOOGLE_PLAY_STORE_USER_REVIEWS_PATH=/data/input/googleplaystore_user_reviews.csv
+      - OUTPUT_PATH=/data/output/
+    volumes:
+        - ./data:/data
