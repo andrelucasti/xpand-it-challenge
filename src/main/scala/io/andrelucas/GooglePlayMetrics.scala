@@ -4,8 +4,8 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{avg, col, count}
 
 case class GooglePlayMetrics(){
-  def fetchMetricsBy(dfPlayStore: DataFrame,
-                     dfUserReviews: DataFrame): DataFrame = {
+
+  val fetchMetricsBy: (DataFrame, DataFrame) => DataFrame = (dfPlayStore, dfUserReviews) => {
     dfPlayStore
       .join(dfUserReviews, dfPlayStore("App") === dfUserReviews("App"), "left")
       .groupBy(col("Genres").as("Genre"))

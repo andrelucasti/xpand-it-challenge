@@ -7,17 +7,14 @@ import org.apache.spark.sql.types._
 
 case class GooglePlayStoreApps(df: DataFrame) {
 
-  def fetchBestApps(): DataFrame = {
+  val fetchBestApps: () => DataFrame = () => {
     Operations.fetchGreaterOrEqual(df, df("Rating"), 4.0)
   }
 
-  def fetchFinalDataframe(): DataFrame = {
-    val dfWithCategoryAndGenres = transformCategoryAndGenres(df)
-      .na.fill(0)
-
+  val fetchFinalDataframe: () => DataFrame = () => {
     val colPriceEuro = regexp_replace(col("Price"), "\\$", "").cast("float") * 0.9
-
-    val dfClear = dfWithCategoryAndGenres.groupBy(
+    val dfClear = transformCategoryAndGenres(df).na.fill(0)
+      .groupBy(
         "App", "Rating", "Categories", "Size", "Installs", "Type", "Price", "Content Rating", "Genres", "Current Ver", "Android Ver"
       ).agg(
         max("Reviews").as("Reviews"),
@@ -44,6 +41,7 @@ case class GooglePlayStoreApps(df: DataFrame) {
         col("Current Ver"),
         col("Android Ver"),
       )
+
   }
 
   private def transformCategoryAndGenres(df: DataFrame): DataFrame = {

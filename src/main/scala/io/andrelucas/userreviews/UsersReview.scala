@@ -7,11 +7,13 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import scala.Double.NaN
 
 case class UsersReview(df: DataFrame) {
-  def fetchReviewsByApp(): DataFrame =
+
+  val fetchReviewsByApp: () => DataFrame = () => {
     df.select(col("App"), col("Sentiment_Polarity").cast("double"))
       .where(df("Sentiment_Polarity") =!= NaN or df("Sentiment_Polarity") =!= null)
+  }
 
-  def fetchAverageSentimentPolarityByApp(): DataFrame = {
+  val fetchAverageSentimentPolarityByApp: () => DataFrame = () => {
     fetchReviewsByApp()
       .groupBy(col("App"))
       .agg(

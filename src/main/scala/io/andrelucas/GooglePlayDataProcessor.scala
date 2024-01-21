@@ -2,6 +2,7 @@ package io.andrelucas
 
 import io.andrelucas.playstore.GooglePlayStoreApps
 import io.andrelucas.userreviews.UsersReview
+import org.apache.spark.sql.DataFrame
 
 case class GooglePlayDataProcessor(googlePlayStore: GooglePlayStoreApps,
                                    usersReview: UsersReview,
@@ -12,29 +13,8 @@ case class GooglePlayDataProcessor(googlePlayStore: GooglePlayStoreApps,
     val dfAvgSentPolarity = usersReview.fetchAverageSentimentPolarityByApp()
     val dfFinalPlayStore = googlePlayStore.fetchFinalDataframe()
     val dfReviews = usersReview.fetchReviewsByApp()
-
     val dfGooglePlayMetrics = googleMetrics.fetchMetricsBy(dfFinalPlayStore, dfReviews)
-
-    val dfGooglePlayStoreCleaned = dfFinalPlayStore.join(
-      dfAvgSentPolarity,
-      dfFinalPlayStore("App") === dfAvgSentPolarity("App"),
-      "left"
-    ).select(
-      dfFinalPlayStore("App"),
-      dfFinalPlayStore("Categories"),
-      dfFinalPlayStore("Rating"),
-      dfFinalPlayStore("Reviews"),
-      dfFinalPlayStore("Size"),
-      dfFinalPlayStore("Installs"),
-      dfFinalPlayStore("Type"),
-      dfFinalPlayStore("Price"),
-      dfFinalPlayStore("Content Rating"),
-      dfFinalPlayStore("Genres"),
-      dfFinalPlayStore("Last Updated"),
-      dfFinalPlayStore("Current Ver"),
-      dfFinalPlayStore("Android Ver"),
-      dfAvgSentPolarity("Average Sentiment Polarity")
-    ).na.fill(0)
+    val dfGooglePlayStoreCleaned = dfPlayStoreCleanedWithAvgSentPolarity(dfFinalPlayStore, dfAvgSentPolarity)
 
     val finalPath = scala.util.Properties.envOrElse("OUTPUT_PATH", "src/main/resources/finalData/")
     val bestApps = FinalDataFrame("best_apps", finalPath, CSV("§"), dfBestApps)
@@ -42,5 +22,28 @@ case class GooglePlayDataProcessor(googlePlayStore: GooglePlayStoreApps,
     val googlePlayMetrics = FinalDataFrame("googleplaystore_metrics", finalPath, Parquet("gzip"), dfGooglePlayMetrics)
 
     List(bestApps, googlePlayCleaned, googlePlayMetrics)
+  }
+
+  private val dfPlayStoreCleanedWithAvgSentPolarity: (DataFrame , DataFrame) => DataFrame = (dfPlayStore, dfAvgSentPolarity) => {
+    dfPlayStore.join(
+      dfAvgSentPolarity,
+      dfPlayStore("App") === dfAvgSentPolarity("App"),
+      "left"
+    ).select(
+      dfPlayStore("App"),
+      dfPlayStore("Categories"),
+      dfPlayStore("Rating"),
+      dfPlayStore("Reviews"),
+      dfPlayStore("Size"),
+      dfPlayStore("Installs"),
+      dfPlayStore("Type"),
+      dfPlayStore("Price"),
+      dfPlayStore("Content Rating"),
+      dfPlayStore("Genres"),
+      dfPlayStore("Last Updated"),
+      dfPlayStore("Current Ver"),
+      dfPlayStore("Android Ver"),
+      dfAvgSentPolarity("Average Sentiment Polarity")
+    ).na.fill(0)
   }
 }
