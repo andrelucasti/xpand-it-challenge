@@ -11,6 +11,7 @@
 To build the images just run the following command:
 
 ```sh
+cd local
 docker-compose build
 ```
 
