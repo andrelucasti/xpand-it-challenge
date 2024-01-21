@@ -104,12 +104,7 @@ After running one of this commands you have to see your app's jar and files.
 ### Submitting the application
 
 ```sh
-docker exec -ti spark-cluster-spark-master-1 spark-submit \ 
---class io.andrelucas.ClusterDeployApp \
---deploy-mode client \
---master spark://spark-master:7077 \
---verbose \
---supervise /opt/spark-apps/app.jar
+docker exec -it spark-cluster-spark-master-1 spark/bin/spark-submit --class io.andrelucas.ClusterDeployApp --deploy-mode client --master spark://spark-master:7077 --verbose --supervise /opt/spark-apps/app.jar
 ```
 
 ### Check the output files
